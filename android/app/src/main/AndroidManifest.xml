@@ -34,9 +34,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <meta-data
+        <!--<meta-data
             android:name="com.yandex.mapkit.API_KEY"
-            android:value="0e0c77d5-c60a-424c-a09c-065f903af733" />
+            android:value="0e0c77d5-c60a-424c-a09c-065f903af733" /> -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

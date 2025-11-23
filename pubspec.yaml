@@ -11,18 +11,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  xml: ^6.6.1
   equatable: ^2.0.5
   collection: ^1.18.0
   cupertino_icons: ^1.0.8
   camera: ^0.11.3
   yandex_mapkit: ^4.2.1
+  geolocator: ^14.0.2
+  gpx: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
   flutter_lints: ^6.0.0
 
 flutter:
-
   uses-material-design: true
+  assets:
+    - assets/Icons/Decabristov_street.jpg
+    - assets/Icons/Green_street.jpg
+    - assets/Icons/Bagulov_street.jpg
+    - assets/Icons/Red_street.jpg
+    - assets/GPX/Lines.gpx
