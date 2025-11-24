@@ -45,6 +45,7 @@ class RouteManager {
         Point(latitude: 52.029076, longitude: 113.505239),
         Point(latitude: 52.031043, longitude: 113.500077),
         Point(latitude: 52.030046, longitude: 113.499046),
+        Point(latitude: 52.031116, longitude: 113.496326),
       ],
       color: Color(0xFF9C27B0),
       backgroundImage: 'assets/street_icons/Bagulov_street.jpg',

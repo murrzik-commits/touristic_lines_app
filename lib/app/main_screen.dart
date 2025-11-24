@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // УБИРАЕМ bottomNavigationBar из Scaffold
+
       body: Stack(
         children: [
           // ОСНОВНОЙ КОНТЕНТ РАСТЯНУТ НА ВЕСЬ ЭКРАН

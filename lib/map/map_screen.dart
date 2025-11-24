@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../widgets/route_card.dart';
 import '../widgets/settings_panel.dart';
+import '../widgets/route_info_panel.dart';
 import 'route_data.dart';
 import 'map_object_manager.dart';
 import 'camera_manager.dart';
@@ -18,7 +19,10 @@ class _MapScreenState extends State<MapScreen> {
   late YandexMapController mapController;
   bool isMapCreated = false;
   bool _showSettings = false;
-  
+
+  String? _selectedRoute;
+  bool _showRouteInfo = false;
+
   late MapObjectManager _mapObjectManager;
   late CameraManager _cameraManager;
 
@@ -40,12 +44,27 @@ class _MapScreenState extends State<MapScreen> {
 
     setState(() {
       _mapObjectManager.showRoute(routeName, routeData);
+      _selectedRoute = routeName;
+      _showRouteInfo = true; // Показываем панель информации
     });
     
     final allPoints = _mapObjectManager.getAllPoints(routeName, routeData);
     if (allPoints.length > 1) {
       _cameraManager.zoomToPoints(allPoints);
     }
+  }
+
+  void _closeRouteInfo() {
+    setState(() {
+      _showRouteInfo = false;
+      _selectedRoute = null;
+    });
+  }
+
+  void _startTour() {
+    // Здесь будет логика начала тура
+    print("Начинаем тур по маршруту: $_selectedRoute");
+    _closeRouteInfo();
   }
 
   void _clearMap() {
@@ -90,6 +109,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           
+          // Карточки маршрутов (скрываются когда открыта RouteInfoPanel)
+          if (!_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
           Positioned(
             left: 0,
             right: 0,
@@ -109,7 +130,21 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           
-          if (!_showSettings)
+          // Панель информации о маршруте (появляется при выборе маршрута)
+          if (_showRouteInfo && _selectedRoute != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 60,
+              child: RouteInfoPanel(
+                routeName: _selectedRoute!,
+                onStartTour: _startTour,
+                onClose: _closeRouteInfo,
+              ),
+            ),
+          
+          // Кнопка настроек (скрывается когда открыта RouteInfoPanel)
+          if (!_showSettings && !_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               right: 16,
@@ -121,7 +156,8 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-          if (_mapObjectManager.currentRoute != null && !_showSettings)
+          // Кнопка очистки маршрута (скрывается когда открыта RouteInfoPanel)
+          if (_mapObjectManager.currentRoute != null && !_showSettings && !_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               left: 16,
