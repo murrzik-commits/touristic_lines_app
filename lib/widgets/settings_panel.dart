@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class SettingsPanel extends StatefulWidget {
   final VoidCallback onClose;
+  final VoidCallback onClearRoutes;
 
-  const SettingsPanel({super.key, required this.onClose});
+  const SettingsPanel({
+    super.key, 
+    required this.onClose,
+    required this.onClearRoutes,
+  });
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();
@@ -16,7 +21,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.5, // Половина экрана
+      width: MediaQuery.of(context).size.width * 0.5,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(

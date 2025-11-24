@@ -28,8 +28,12 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/Icons/Decabristov_street.jpg
-    - assets/Icons/Green_street.jpg
-    - assets/Icons/Bagulov_street.jpg
-    - assets/Icons/Red_street.jpg
-    - assets/GPX/Lines.gpx
+    - assets/street_icons/Decabristov_street.jpg
+    - assets/street_icons/Green_street.jpg
+    - assets/street_icons/Bagulov_street.jpg
+    - assets/street_icons/Red_street.jpg
+    - assets/icons/ic_pin.png
+    - assets/icons/bagulova_line_pin.png
+    - assets/icons/green_street_pin.png
+    - assets/icons/decabristov_street_pin.png
+    - assets/icons/red_street_pin.png

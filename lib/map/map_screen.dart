@@ -1,7 +1,11 @@
+// lib/map/map_screen.dart
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import '../widgets/route_card.dart';
 import '../widgets/settings_panel.dart';
+import 'route_data.dart';
+import 'map_object_manager.dart';
+import 'camera_manager.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -14,27 +18,41 @@ class _MapScreenState extends State<MapScreen> {
   late YandexMapController mapController;
   bool isMapCreated = false;
   bool _showSettings = false;
+  
+  late MapObjectManager _mapObjectManager;
+  late CameraManager _cameraManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapObjectManager = MapObjectManager();
+  }
 
   void _setInitialCameraPosition() {
     if (isMapCreated) {
-      mapController.moveCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: Point(
-              latitude: 52.0311,
-              longitude: 113.4958,
-            ),
-            zoom: 12,
-            tilt: 30,
-            azimuth: 0,
-          ),
-        ),
-        animation: const MapAnimation(
-          type: MapAnimationType.smooth,
-          duration: 1,
-        ),
-      );
+      _cameraManager.setInitialCameraPosition();
     }
+  }
+
+  void _showRoute(String routeName) {
+    final routeData = RouteManager.getRoute(routeName);
+    if (routeData == null) return;
+
+    setState(() {
+      _mapObjectManager.showRoute(routeName, routeData);
+    });
+    
+    final allPoints = _mapObjectManager.getAllPoints(routeName, routeData);
+    if (allPoints.length > 1) {
+      _cameraManager.zoomToPoints(allPoints);
+    }
+  }
+
+  void _clearMap() {
+    setState(() {
+      _mapObjectManager.clearMap();
+    });
+    _setInitialCameraPosition();
   }
 
   void _openSettings() {
@@ -59,10 +77,12 @@ class _MapScreenState extends State<MapScreen> {
             child: YandexMap(
               onMapCreated: (YandexMapController controller) {
                 mapController = controller;
+                _cameraManager = CameraManager(mapController);
                 isMapCreated = true;
                 _setInitialCameraPosition();
                 print("Yandex Map Created and initial position set");
               },
+              mapObjects: _mapObjectManager.mapObjects,
               zoomGesturesEnabled: true,
               scrollGesturesEnabled: true,
               rotateGesturesEnabled: true,
@@ -70,8 +90,6 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           
-          // Карточки маршрутов поверх карты
-          // В части с карточками маршрутов замените на:
           Positioned(
             left: 0,
             right: 0,
@@ -82,36 +100,15 @@ class _MapScreenState extends State<MapScreen> {
               padding: const EdgeInsets.only(left: 16, right: 16),
               child: Row(
                 children: [
-                RouteCard(
-                  title: "Багулова линия", 
-                  subtitle: "Путешествие в прошлое столицы Забайкалья",
-                  backgroundImage: 'assets/Icons/Bagulov_street.jpg',
-                  gradientColor: const Color(0xFF9C27B0), // Красивый фиолетовый
-                ),
-                RouteCard(
-                  title: "Зеленая линия",
-                  subtitle: "Погрузитесь в уникальную архитекрутру города Чита",
-                  backgroundImage: 'assets/Icons/Green_street.jpg',
-                  gradientColor: const Color(0xFF4CAF50), // Красивый зеленый
-                ),
-                  RouteCard(
-                  title: "Квартал Декабристов",
-                  subtitle: "Узнайте историю жизни забайкальских декабристов", 
-                  backgroundImage: 'assets/Icons/Decabristov_street.jpg',
-                  gradientColor: const Color(0x8b4513), // Красивый синий
-                ),
-                RouteCard(
-                  title: "Красная улица",
-                  subtitle: "Погрузитесь в события визита Мао Цзедуна в столицу Забайкалья",
-                  backgroundImage: 'assets/Icons/Red_street.jpg',
-                  gradientColor: const Color(0xFFF44336), // Красивый красный
-                ),
+                  _buildRouteCard('bagulov'),
+                  _buildRouteCard('green'),
+                  _buildRouteCard('decabristov'),
+                  _buildRouteCard('red'),
                 ],
               ),
             ),
           ),
           
-          // КНОПКА НАСТРОЕК (ПОКАЗЫВАЕТСЯ ТОЛЬКО КОГДА НАСТРОЙКИ ЗАКРЫТЫ)
           if (!_showSettings)
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
@@ -124,17 +121,59 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-          // ВЫДВИЖНОЙ ВИДЖЕТ НАСТРОЕК СПРАВА
+          if (_mapObjectManager.currentRoute != null && !_showSettings)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 16,
+              child: FloatingActionButton.small(
+                heroTag: "clear_button",
+                backgroundColor: Colors.white,
+                onPressed: _clearMap,
+                child: const Icon(Icons.clear, color: Color(0xFF2E2E2E)),
+              ),
+            ),
+
           if (_showSettings)
             Positioned(
               right: 0,
               top: 0,
               bottom: 0,
-              child: SettingsPanel(onClose: _closeSettings),
+              child: SettingsPanel(
+                onClose: _closeSettings,
+                onClearRoutes: _clearMap,
+              ),
             ),
         ],
       ),
     );
+  }
+
+  Widget _buildRouteCard(String routeName) {
+    final routeData = RouteManager.getRoute(routeName);
+    if (routeData == null) return const SizedBox();
+
+    return RouteCard(
+      title: routeData.name,
+      subtitle: _getRouteSubtitle(routeName),
+      backgroundImage: routeData.backgroundImage,
+      gradientColor: routeData.color,
+      onTap: () => _showRoute(routeName),
+    );
+  }
+
+  String _getRouteSubtitle(String routeName) {
+    switch (routeName) {
+      case 'bagulov':
+        return "Путешествие в прошлое столицы Забайкалья";
+      case 'green':
+        return "Погрузитесь в уникальную архитекрутру города Чита";
+      case 'decabristov':
+        return "Узнайте историю жизни забайкальских декабристов";
+      case 'red':
+        return "Погрузитесь в события визита Мао Цзедуна в столицу Забайкалья";
+      default:
+        return "";
+    }
   }
 
   @override
