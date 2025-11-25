@@ -74,7 +74,57 @@ class MapObjectManager {
     
     _mapObjects.add(polylineObject);
   }
-
+  //показать все маршруты
+    void showAllPoints() {
+    _mapObjects.clear();
+    _currentRoute = null;
+    
+    final allRoutes = RouteManager.getRouteNames();
+    
+    for (final routeName in allRoutes) {
+      final routeData = RouteManager.getRoute(routeName);
+      if (routeData != null) {
+        _addPoints(routeName, routeData.points, routeData.color);
+      }
+    }
+  }
+  void showAllLines() {
+    _mapObjects.clear();
+    _currentRoute = null;
+    
+    final allRoutes = RouteManager.getRouteNames();
+    
+    for (final routeName in allRoutes) {
+      final routeData = RouteManager.getRoute(routeName);
+      if (routeData != null) {
+        _addLines(routeName, routeData.lines, routeData.color);
+      }
+    }
+  }
+    // получить все точки всех маршрутов
+  List<Point> getAllRoutesPoints() {
+    final allPoints = <Point>[];
+    final allRoutes = RouteManager.getRouteNames();
+    
+    for (final routeName in allRoutes) {
+      final routeData = RouteManager.getRoute(routeName);
+      if (routeData != null) {
+        // Добавляем только уникальные точки
+        for (final point in routeData.points) {
+          if (!allPoints.any((p) => p.latitude == point.latitude && p.longitude == point.longitude)) {
+            allPoints.add(point);
+          }
+        }
+        for (final point in routeData.lines) {
+          if (!allPoints.any((p) => p.latitude == point.latitude && p.longitude == point.longitude)) {
+            allPoints.add(point);
+          }
+        }
+      }
+    }
+    
+    return allPoints;
+  }
   List<Point> getAllPoints(String routeName, RouteData routeData) {
     return <Point>[
       ...routeData.points,

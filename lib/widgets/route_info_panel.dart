@@ -214,7 +214,6 @@ class RouteInfoPanel extends StatelessWidget {
     );
   }
 
-  // ... остальные методы без изменений ...
   String _getRouteTitle(String routeName) {
     switch (routeName) {
       case 'bagulov':

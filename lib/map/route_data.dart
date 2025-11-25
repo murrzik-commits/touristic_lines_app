@@ -147,4 +147,8 @@ class RouteManager {
   static List<String> getRouteNames() {
     return _routes.keys.toList();
   }
+
+  static Map<String, RouteData> getAllRoutes() {
+    return Map.from(_routes);
+  }
 }

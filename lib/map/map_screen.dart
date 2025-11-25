@@ -1,12 +1,12 @@
 // lib/map/map_screen.dart
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
-import '../widgets/route_card.dart';
+import '../widgets/small_route_card.dart';
 import '../widgets/settings_panel.dart';
 import '../widgets/route_info_panel.dart';
-import 'route_data.dart';
 import 'map_object_manager.dart';
 import 'camera_manager.dart';
+import '../services/route_service.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -19,7 +19,6 @@ class _MapScreenState extends State<MapScreen> {
   late YandexMapController mapController;
   bool isMapCreated = false;
   bool _showSettings = false;
-
   String? _selectedRoute;
   bool _showRouteInfo = false;
 
@@ -32,20 +31,29 @@ class _MapScreenState extends State<MapScreen> {
     _mapObjectManager = MapObjectManager();
   }
 
-  void _setInitialCameraPosition() {
-    if (isMapCreated) {
+  void _showAllLines() {
+    setState(() {
+      _mapObjectManager.showAllLines();
+      _selectedRoute = null;
+      _showRouteInfo = false;
+    });
+    
+    final allPoints = _mapObjectManager.getAllRoutesPoints();
+    if (allPoints.isNotEmpty) {
+      _cameraManager.zoomToAllPoints(allPoints);
+    } else if (isMapCreated) {
       _cameraManager.setInitialCameraPosition();
     }
   }
 
   void _showRoute(String routeName) {
-    final routeData = RouteManager.getRoute(routeName);
+    final routeData = RouteService.getRouteData(routeName);
     if (routeData == null) return;
 
     setState(() {
       _mapObjectManager.showRoute(routeName, routeData);
       _selectedRoute = routeName;
-      _showRouteInfo = true; // Показываем панель информации
+      _showRouteInfo = true;
     });
     
     final allPoints = _mapObjectManager.getAllPoints(routeName, routeData);
@@ -59,10 +67,10 @@ class _MapScreenState extends State<MapScreen> {
       _showRouteInfo = false;
       _selectedRoute = null;
     });
+    _showAllLines();
   }
 
   void _startTour() {
-    // Здесь будет логика начала тура
     print("Начинаем тур по маршруту: $_selectedRoute");
     _closeRouteInfo();
   }
@@ -71,7 +79,7 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _mapObjectManager.clearMap();
     });
-    _setInitialCameraPosition();
+    _cameraManager.setInitialCameraPosition();
   }
 
   void _openSettings() {
@@ -98,8 +106,7 @@ class _MapScreenState extends State<MapScreen> {
                 mapController = controller;
                 _cameraManager = CameraManager(mapController);
                 isMapCreated = true;
-                _setInitialCameraPosition();
-                print("Yandex Map Created and initial position set");
+                _showAllLines();
               },
               mapObjects: _mapObjectManager.mapObjects,
               zoomGesturesEnabled: true,
@@ -109,33 +116,17 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           
-          // Карточки маршрутов (скрываются когда открыта RouteInfoPanel)
-          if (!_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
-          Positioned(
-            left: 0,
-            right: 0,
-            height: 150,
-            bottom: 90,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 16, right: 16),
-              child: Row(
-                children: [
-                  _buildRouteCard('bagulov'),
-                  _buildRouteCard('green'),
-                  _buildRouteCard('decabristov'),
-                  _buildRouteCard('red'),
-                ],
-              ),
+          // Карточки маршрутов
+          if (!_showRouteInfo) 
+            Positioned(
+              left: 0, right: 0, height: 150, bottom: 90,
+              child: _buildRouteCards(),
             ),
-          ),
           
-          // Панель информации о маршруте (появляется при выборе маршрута)
+          // Панель информации о маршруте
           if (_showRouteInfo && _selectedRoute != null)
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 60,
+              left: 0, right: 0, bottom: 60,
               child: RouteInfoPanel(
                 routeName: _selectedRoute!,
                 onStartTour: _startTour,
@@ -143,8 +134,8 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
           
-          // Кнопка настроек (скрывается когда открыта RouteInfoPanel)
-          if (!_showSettings && !_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
+          // Кнопка настроек
+          if (!_showSettings && !_showRouteInfo) 
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               right: 16,
@@ -156,8 +147,8 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
-          // Кнопка очистки маршрута (скрывается когда открыта RouteInfoPanel)
-          if (_mapObjectManager.currentRoute != null && !_showSettings && !_showRouteInfo) // ← ДОБАВИЛ ПРОВЕРКУ
+          // Кнопка очистки маршрута
+          if (_mapObjectManager.currentRoute != null && !_showSettings && !_showRouteInfo) 
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               left: 16,
@@ -169,11 +160,10 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
+          // Панель настроек
           if (_showSettings)
             Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
+              right: 0, top: 0, bottom: 0,
               child: SettingsPanel(
                 onClose: _closeSettings,
                 onClearRoutes: _clearMap,
@@ -184,32 +174,22 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildRouteCard(String routeName) {
-    final routeData = RouteManager.getRoute(routeName);
-    if (routeData == null) return const SizedBox();
-
-    return RouteCard(
-      title: routeData.name,
-      subtitle: _getRouteSubtitle(routeName),
-      backgroundImage: routeData.backgroundImage,
-      gradientColor: routeData.color,
-      onTap: () => _showRoute(routeName),
+  Widget _buildRouteCards() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.only(left: 16, right: 16),
+      child: Row(
+        children: RouteService.getAllRouteNames().map((routeName) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 3),
+            child: SmallRouteCard(
+              routeName: routeName,
+              onTap: () => _showRoute(routeName),
+            ),
+          );
+        }).toList(),
+      ),
     );
-  }
-
-  String _getRouteSubtitle(String routeName) {
-    switch (routeName) {
-      case 'bagulov':
-        return "Путешествие в прошлое столицы Забайкалья";
-      case 'green':
-        return "Погрузитесь в уникальную архитекрутру города Чита";
-      case 'decabristov':
-        return "Узнайте историю жизни забайкальских декабристов";
-      case 'red':
-        return "Погрузитесь в события визита Мао Цзедуна в столицу Забайкалья";
-      default:
-        return "";
-    }
   }
 
   @override
