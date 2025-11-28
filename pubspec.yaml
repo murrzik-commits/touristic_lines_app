@@ -19,6 +19,7 @@ dependencies:
   yandex_mapkit: ^4.2.1
   geolocator: ^14.0.2
   gpx: ^2.3.0
+  permission_handler: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -32,9 +33,24 @@ flutter:
     - assets/street_icons/Green_street.jpg
     - assets/street_icons/Bagulov_street.jpg
     - assets/street_icons/Red_street.jpg
-    - assets/icons/ic_pin.png
-    - assets/icons/bagulova_line_pin.png
-    - assets/icons/green_street_pin.png
-    - assets/icons/decabristov_street_pin.png
+    - assets/icons/bagulova_pin.png
+    - assets/icons/green_pin.png
+    - assets/icons/decabristov_pin.png
     - assets/icons/red_street_pin.png
     - assets/icons/Camera.png
+    - assets/objects/decabristov.jpg
+    - assets/objects/post_office.jpg
+    - assets/objects/xlynovskogo.jpg
+    - assets/objects/post_office.jpg
+    - assets/objects/polutovski.jpg
+    - assets/objects/missionerskoe.jpg
+    - assets/objects/ODORA.jpg
+    - assets/objects/beketov.jpg
+    - assets/objects/shumovih.jpg
+    - assets/objects/polutovski.jpg
+    - assets/objects/passaj.jpg
+    - assets/objects/berguta.jpg
+    - assets/objects/teatralnaia.jpg
+    - assets/objects/gosbank.jpg
+    - assets/objects/gubernatora.jpg
+    - assets/objects/kafedralnii.jpg

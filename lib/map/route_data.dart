@@ -2,13 +2,32 @@
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
+/// Класс данных маршрута для хранения информации о туристических маршрутах
+/// Содержит точки интереса, линии маршрута, цвет и изображение фона
 class RouteData {
+  /// Название маршрута для отображения пользователю
   final String name;
+  
+  /// Список точек интереса на маршруте (достопримечательности, объекты)
   final List<Point> points;
+  
+  /// Список точек для построения линии маршрута (путь следования)
   final List<Point> lines;
+  
+  /// Цвет маршрута для отображения на карте
   final Color color;
+  
+  /// Путь к фоновому изображению для карточки маршрута
   final String backgroundImage;
 
+  /// Конструктор класса RouteData
+  /// 
+  /// Аргументы:
+  /// [name] - человеко-читаемое название маршрута
+  /// [points] - точки интереса (метки на карте)
+  /// [lines] - точки для построения линии маршрута
+  /// [color] - цвет для визуализации маршрута
+  /// [backgroundImage] - путь к изображению для фона карточки
   const RouteData({
     required this.name,
     required this.points,
@@ -18,7 +37,11 @@ class RouteData {
   });
 }
 
+/// Менеджер для работы с данными маршрутов
+/// Предоставляет доступ к предопределенным маршрутам города
 class RouteManager {
+  /// Статическая карта всех доступных маршрутов
+  /// Ключ - идентификатор маршрута, Значение - данные маршрута
   static final Map<String, RouteData> _routes = {
     'bagulov': RouteData(
       name: "Багулова линия",
@@ -47,7 +70,7 @@ class RouteManager {
         Point(latitude: 52.030046, longitude: 113.499046),
         Point(latitude: 52.031116, longitude: 113.496326),
       ],
-      color: Color(0xFF9C27B0),
+      color: Color(0xFF9C27B0), // Фиолетовый цвет
       backgroundImage: 'assets/street_icons/Bagulov_street.jpg',
     ),
     'green': RouteData(
@@ -82,7 +105,7 @@ class RouteManager {
         Point(latitude: 52.021759, longitude: 113.513634),
         Point(latitude: 52.021428, longitude: 113.513378),
       ],
-      color: Color(0xFF4CAF50),
+      color: Color(0xFF4CAF50), // Зеленый цвет
       backgroundImage: 'assets/street_icons/Green_street.jpg',
     ),
     'decabristov': RouteData(
@@ -102,7 +125,7 @@ class RouteManager {
         Point(latitude: 52.021734, longitude: 113.513794),
         Point(latitude: 52.021567, longitude: 113.513126),
       ],
-      color: Color(0x8B4513),
+      color: Color(0x8b451300), // Коричневый цвет
       backgroundImage: 'assets/street_icons/Decabristov_street.jpg',
     ),
     'red': RouteData(
@@ -135,19 +158,34 @@ class RouteManager {
         Point(latitude: 52.044218, longitude: 113.470286),
         Point(latitude: 52.049971, longitude: 113.473497),
       ],
-      color: Color(0xFFF44336),
+      color: Color(0xFFF44336), // Красный цвет
       backgroundImage: 'assets/street_icons/Red_street.jpg',
     ),
   };
 
+  /// Получает данные маршрута по его идентификатору
+  /// 
+  /// Аргументы:
+  /// [routeName] - идентификатор маршрута (bagulov, green, decabristov, red)
+  /// 
+  /// Возвращает:
+  /// [RouteData?] - данные маршрута или null если маршрут не найден
   static RouteData? getRoute(String routeName) {
     return _routes[routeName];
   }
 
+  /// Получает список всех идентификаторов маршрутов
+  /// 
+  /// Возвращает:
+  /// [List<String>] - список идентификаторов доступных маршрутов
   static List<String> getRouteNames() {
     return _routes.keys.toList();
   }
 
+  /// Получает копию карты всех маршрутов
+  /// 
+  /// Возвращает:
+  /// [Map<String, RouteData>] - копия карты всех маршрутов
   static Map<String, RouteData> getAllRoutes() {
     return Map.from(_routes);
   }
